@@ -1904,7 +1904,7 @@ namespace Barotrauma.Networking
             MissionMode missionMode = GameMain.GameSession.GameMode as MissionMode;
             bool missionAllowRespawn = campaign == null && (missionMode?.Mission == null || missionMode.Mission.AllowRespawn);
 
-            if (serverSettings.AllowRespawn && missionAllowRespawn) { respawnManager = new RespawnManager(this, usingShuttle ? selectedShuttle : null); }
+            if (serverSettings.AllowRespawn && (missionAllowRespawn || serverSettings.AllowCampaignRespawn)) { respawnManager = new RespawnManager(this, usingShuttle ? selectedShuttle : null); }
 
             Level.Loaded?.SpawnCorpses();
             AutoItemPlacer.PlaceIfNeeded(GameMain.GameSession.GameMode);
@@ -3053,7 +3053,7 @@ namespace Barotrauma.Networking
             for (int i = unassigned.Count - 1; i >= 0; i--)
             {
                 if (unassigned[i].JobPreferences.Count == 0) { continue; }
-                if (!unassigned[i].JobPreferences[0].First.AllowAlways) { continue; }
+                if (!GameMain.Server.ServerSettings.ForceAllowPreferredJobs && !unassigned[i].JobPreferences[0].First.AllowAlways) { continue; }
                 unassigned[i].AssignedJob = unassigned[i].JobPreferences[0];
                 unassigned.RemoveAt(i);
             }

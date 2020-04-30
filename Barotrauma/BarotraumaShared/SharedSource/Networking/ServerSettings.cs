@@ -596,6 +596,13 @@ namespace Barotrauma.Networking
             }
         }
 
+        [Serialize(false, true)]
+        public bool AllowCampaignRespawn
+        {
+            get;
+            set;
+        }
+
         [Serialize(0, true)]
         public int BotCount
         {
@@ -861,6 +868,9 @@ namespace Barotrauma.Networking
             get;
             set;
         }
+
+        [Serialize(false,true)]
+        public bool ForceAllowPreferredJobs { get; set; }
 
         public void SetPassword(string password)
         {
