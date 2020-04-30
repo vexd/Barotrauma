@@ -12,7 +12,7 @@ namespace Barotrauma
 
         public bool CheatsEnabled;
 
-        const int InitialMoney = 8700;
+        public static int InitialMoney { get; set; } = 8700;
         public const int HullRepairCost = 500, ItemRepairCost = 500, ShuttleReplaceCost = 1000;
 
         protected bool watchmenSpawned;

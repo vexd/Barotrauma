@@ -37,7 +37,7 @@ namespace Barotrauma.Networking
         SomethingDifferent = 4
     }
 
-    partial class ServerSettings : ISerializableEntity
+    internal partial class ServerSettings : ISerializableEntity
     {
         public const string SettingsFile = "serversettings.xml";
 
@@ -220,7 +220,15 @@ namespace Barotrauma.Networking
                         break;
                     case "int":
                         msg.WriteVariableUInt32(4);
-                        msg.Write((int)overrideValue);
+                        object value = overrideValue;
+                        // If there is a slider bound to an int property we need to explicitly conver
+                        // the single type to int first otherwise we throw a cast exception
+                        if (overrideValue.GetType() == typeof(float))
+                        {
+                            float fValue = (float)overrideValue;
+                            value = (int)fValue;
+                        }
+                        msg.Write((int)value);
                         break;
                     case "vector2":
                         msg.WriteVariableUInt32(8);
@@ -281,6 +289,7 @@ namespace Barotrauma.Networking
 
             Whitelist = new WhiteList();
             BanList = new BanList();
+            CustomSettings = new CustomSettings();
 
             ExtraCargo = new Dictionary<ItemPrefab, int>();
 
@@ -309,7 +318,7 @@ namespace Barotrauma.Networking
                     {
                         NetPropertyData netPropertyData = new NetPropertyData(this, property, typeName);
                         UInt32 key = ToolBox.StringToUInt32Hash(property.Name, md5);
-                        if (netProperties.ContainsKey(key)){ throw new Exception("Hashing collision in ServerSettings.netProperties: " + netProperties[key] + " has same key as " + property.Name + " (" + key.ToString() + ")"); }
+                        if (netProperties.ContainsKey(key)) { throw new Exception("Hashing collision in ServerSettings.netProperties: " + netProperties[key] + " has same key as " + property.Name + " (" + key.ToString() + ")"); }
                         netProperties.Add(key, netPropertyData);
                     }
                 }
@@ -506,7 +515,7 @@ namespace Barotrauma.Networking
         public PlayStyle PlayStyle
         {
             get { return playstyleSelection; }
-            set 
+            set
             {
                 playstyleSelection = value;
                 ServerDetailsChanged = true;
@@ -745,6 +754,8 @@ namespace Barotrauma.Networking
 
         public BanList BanList { get; private set; }
 
+        public CustomSettings CustomSettings { get; private set; }
+
         [Serialize(0.6f, true)]
         public float EndVoteRequiredRatio
         {
@@ -842,6 +853,13 @@ namespace Barotrauma.Networking
         {
             get;
             private set;
+        }
+
+        [Serialize(8700, true)]
+        public int CampaignStartingCash
+        {
+            get;
+            set;
         }
 
         public void SetPassword(string password)

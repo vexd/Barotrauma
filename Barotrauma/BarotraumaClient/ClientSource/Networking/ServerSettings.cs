@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace Barotrauma.Networking
 {
-    partial class ServerSettings : ISerializableEntity
+    internal partial class ServerSettings : ISerializableEntity
     {
-        partial class NetPropertyData
+        internal partial class NetPropertyData
         {
             public GUIComponent GUIComponent;
             public object TempValue;
@@ -122,6 +122,7 @@ namespace Barotrauma.Networking
             ReadMonsterEnabled(incMsg);
             BanList.ClientAdminRead(incMsg);
             Whitelist.ClientAdminRead(incMsg);
+            CustomSettings.ClientAdminRead(incMsg);
         }
 
         public void ClientRead(IReadMessage incMsg)
@@ -196,6 +197,7 @@ namespace Barotrauma.Networking
                 if (changedMonsterSettings) WriteMonsterEnabled(outMsg, tempMonsterEnabled);
                 BanList.ClientAdminWrite(outMsg);
                 Whitelist.ClientAdminWrite(outMsg);
+                CustomSettings.ClientAdminWrite(outMsg);
             }
 
             if (dataToSend.HasFlag(NetFlags.Misc))
@@ -238,10 +240,11 @@ namespace Barotrauma.Networking
             Rounds,
             Antigriefing,
             Banlist,
-            Whitelist
+            Whitelist,
+            GameDevFail
         }
 
-        private NetPropertyData GetPropertyData(string name)
+        public NetPropertyData GetPropertyData(string name)
         {
             return netProperties.First(p => p.Value.Name == name).Value;
         }
@@ -888,9 +891,15 @@ namespace Barotrauma.Networking
             //--------------------------------------------------------------------------------
 
             Whitelist.CreateWhiteListFrame(settingsTabs[(int)SettingsTab.Whitelist]);
+
+            //--------------------------------------------------------------------------------
+            //                              GameDevFail
+            //--------------------------------------------------------------------------------
+
+            CustomSettings.CreateSettingsFrame(this, settingsTabs[(int)SettingsTab.GameDevFail]);
         }
 
-        private void CreateLabeledSlider(GUIComponent parent, string labelTag, out GUIScrollBar slider, out GUITextBlock label)
+        public static void CreateLabeledSlider(GUIComponent parent, string labelTag, out GUIScrollBar slider, out GUITextBlock label)
         {
             var container = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 0.05f), parent.RectTransform), isHorizontal: true)
             {

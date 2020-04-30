@@ -54,6 +54,9 @@ namespace Barotrauma
         {
             currentCampaignID++;
             CampaignID = currentCampaignID;
+#if SERVER
+            Money = GameMain.Server.ServerSettings.CampaignStartingCash;
+#endif
         }
         
         public override void Start()
