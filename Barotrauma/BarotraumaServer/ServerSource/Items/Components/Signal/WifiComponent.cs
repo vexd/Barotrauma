@@ -11,33 +11,18 @@ namespace Barotrauma.Items.Components
         {
             if (c.Character == null) { return; }
 
-            Dictionary<int, ChannelSetting> prevSettings = MultiChannelConfig;
-            MultiChannelConfig = new Dictionary<int, ChannelSetting>();
-            ReadMultiChannelConfigMsg(msg);
+            //shadow settings and read into new grouping
+            ChannelGroup prevSettings = MultiChannelConfig;
+            ChannelGroup replSettings = new ChannelGroup();
+            replSettings.ReadMultiChannelConfigMsg(msg);
+
+            //Swap settings
+            MultiChannelConfig = replSettings;
 
             //Try to not send if nothing has changed
-            bool changed = true;
-
-            var existingkeys = MultiChannelConfig.Keys.Intersect(prevSettings.Keys);
-            if(existingkeys.Count()==prevSettings.Keys.Count())
+            if (!replSettings.Equals(prevSettings))
             {
-                changed = false;
-                //no new or removed keys - check for alterations to settings
-                foreach (var kvp in prevSettings)
-                {
-                    var newSetting = kvp.Value;
-                    var oldSetting = prevSettings[kvp.Key];
-                    if (newSetting.Send != oldSetting.Send || newSetting.Recieve != oldSetting.Recieve)
-                    {
-                        changed = true;
-                        break;
-                    }
-                }
-            }
-            
-            //Broadcast back to clients
-            if(changed)
-            {
+                //Broadcast back to clients
                 item.CreateServerEvent(this);
             }
 
@@ -45,7 +30,7 @@ namespace Barotrauma.Items.Components
 
         public void ServerWrite(IWriteMessage msg, Client c, object[] extraData = null)
         {
-            WriteMultiChannelConfigMsg(msg);
+            MultiChannelConfig.WriteMultiChannelConfigMsg(msg);
         }
     }
 }

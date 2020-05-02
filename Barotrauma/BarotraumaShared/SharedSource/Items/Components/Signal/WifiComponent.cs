@@ -20,6 +20,122 @@ namespace Barotrauma.Items.Components
         }
     }
 
+    public class ChannelGroup
+    {
+        private Dictionary<int, ChannelSetting>  Channels = new Dictionary<int, ChannelSetting>();
+
+        public void WriteMultiChannelConfigMsg(IWriteMessage msg)
+        {
+            // Write channel updates to server to allow send/recieve
+            msg.Write(Channels.Count);
+            foreach (var kvp in Channels)
+            {
+                msg.Write(kvp.Key);
+                msg.Write(kvp.Value.Send);
+                msg.Write(kvp.Value.Recieve);
+            }
+        }
+
+        public void ReadMultiChannelConfigMsg(IReadMessage msg)
+        {
+            int count = msg.ReadInt32();
+
+            for (int i = 0; i < count; i++)
+            {
+                int channel = msg.ReadInt32();
+                bool send = msg.ReadBoolean();
+                bool recieve = msg.ReadBoolean();
+
+                Channels.Add(channel, new ChannelSetting(send, recieve));
+            }
+        }
+
+        public IEnumerable<int> OpenSendChannels
+        {
+            get
+            {
+                List<int> openChannels = new List<int>(Channels.Count);
+                foreach (var kvp in Channels)
+                {
+                    if (kvp.Value.Send)
+                        openChannels.Add(kvp.Key);
+                }
+                return openChannels;
+            }
+        }
+
+        public IEnumerable<int> OpenRecieveChannels
+        {
+            get
+            {
+                List<int> openChannels = new List<int>(Channels.Count);
+                foreach (var kvp in Channels)
+                {
+                    if (kvp.Value.Recieve)
+                        openChannels.Add(kvp.Key);
+                }
+                return openChannels;
+            }
+        }
+
+        public bool CanRecieve(ChannelGroup sender)
+        {
+            foreach (var sendChannel in sender.OpenSendChannels)
+            {
+                if (OpenRecieveChannels.Contains(sendChannel))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool AddChannel(int channel, bool send, bool recieve)
+        {
+            ChannelSetting existing;
+            if (!Channels.TryGetValue(channel, out existing))
+            {
+                Channels.Add(channel, new ChannelSetting(send, recieve));
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool RemoveChannel(int channel)
+        {
+            bool ret = Channels.Remove(channel);
+            return ret;
+        }
+
+        public bool Equals(ChannelGroup other)
+        {
+            bool equal = false;
+            var existingkeys = Channels.Keys.Intersect(other.Channels.Keys);
+            if (existingkeys.Count() == other.Channels.Keys.Count())
+            {
+                equal = true;
+                //no new or removed keys - check for alterations to settings
+                foreach (var kvp in other.Channels)
+                {
+                    var otherSetting = kvp.Value;
+                    var setting = Channels[kvp.Key];
+                    if (setting.Send != otherSetting.Send || setting.Recieve != otherSetting.Recieve)
+                    {
+                        equal = false;
+                        break;
+                    }
+                }
+            }
+
+            return equal;
+        }
+
+        public void Clear()
+        {
+            Channels.Clear();
+        }
+    }
+
     partial class WifiComponent : ItemComponent, IClientSerializable, IServerSerializable
     {
         private static List<WifiComponent> list = new List<WifiComponent>();
@@ -32,8 +148,10 @@ namespace Barotrauma.Items.Components
 
         private string prevSignal;
 
+        List<ChannelGroup> ChannelGroups;
+
         //multi channel
-        private Dictionary<int, ChannelSetting> MultiChannelConfig = new Dictionary<int, ChannelSetting>();
+        ChannelGroup MultiChannelConfig = new ChannelGroup();
 
         [Serialize(false, false)]
         public bool MultiChannel
@@ -140,64 +258,37 @@ namespace Barotrauma.Items.Components
 
         public IEnumerable<int> OpenSendChannels
         {
-            get {
-                List<int> openChannels = new List<int>(MultiChannelConfig.Count);
-                foreach (var kvp in MultiChannelConfig)
-                {
-                    if (kvp.Value.Send)
-                        openChannels.Add(kvp.Key);
-                }
-                return openChannels;
-            }
+            get {  return MultiChannelConfig.OpenSendChannels; }
         }
 
         public IEnumerable<int> OpenRecieveChannels
         {
-            get
-            {
-                List<int> openChannels = new List<int>(MultiChannelConfig.Count);
-                foreach (var kvp in MultiChannelConfig)
-                {
-                    if (kvp.Value.Recieve)
-                        openChannels.Add(kvp.Key);
-                }
-                return openChannels;
-            }
+            get { return MultiChannelConfig.OpenRecieveChannels; }
         }
 
         public bool MultiChannelCanRecieve(WifiComponent sender)
         {
-            foreach (var sendChannel in sender.OpenSendChannels)
-            {
-                if (OpenRecieveChannels.Contains(sendChannel))
-                    return true;
-            }
-
-            return false;
+            return MultiChannelConfig.CanRecieve(sender.MultiChannelConfig);
         }
 
         public bool AddChannel(int channel, bool send, bool recieve)
         {
-            ChannelSetting existing;
-            if (!MultiChannelConfig.TryGetValue(channel, out existing))
-            {
-                MultiChannelConfig.Add(channel, new ChannelSetting(send, recieve));
+            bool added = MultiChannelConfig.AddChannel(channel, send, recieve);
 #if CLIENT
+            if(added)
                 item.CreateClientEvent(this);
 #endif
-                return true;
-            }
-
-            return false;
+            return added;
         }
 
         public bool RemoveChannel(int channel)
         {
-            bool ret =  MultiChannelConfig.Remove(channel);
+            bool removed =  MultiChannelConfig.RemoveChannel(channel);
 #if CLIENT
-            item.CreateClientEvent(this);
+            if(removed)
+                item.CreateClientEvent(this);
 #endif
-            return ret;
+            return removed;
         }
 
         partial void InitProjSpecific(XElement element);
@@ -297,32 +388,6 @@ namespace Barotrauma.Items.Components
         protected override void RemoveComponentSpecific()
         {
             list.Remove(this);
-        }
-
-        void WriteMultiChannelConfigMsg(IWriteMessage msg)
-        {
-            // Write channel updates to server to allow send/recieve
-            msg.Write(MultiChannelConfig.Count);
-            foreach (var kvp in MultiChannelConfig)
-            {
-                msg.Write(kvp.Key);
-                msg.Write(kvp.Value.Send);
-                msg.Write(kvp.Value.Recieve);
-            }
-        }
-
-        void ReadMultiChannelConfigMsg(IReadMessage msg)
-        {
-            int count = msg.ReadInt32();
-
-            for (int i = 0; i < count; i++)
-            {
-                int channel = msg.ReadInt32();
-                bool send = msg.ReadBoolean();
-                bool recieve = msg.ReadBoolean();
-
-                MultiChannelConfig.Add(channel, new ChannelSetting(send, recieve));
-            }
         }
     }
 }
