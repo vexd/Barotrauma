@@ -387,6 +387,10 @@ namespace Barotrauma.Items.Components
             return true;
         }
 
+        public virtual void ShowConfigurationUI() { }
+
+        public bool IsShowingConfigurationUI { get; set; }
+
 
         public ItemComponent GetLinkUIToComponent()
         {

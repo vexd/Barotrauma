@@ -29,6 +29,14 @@ namespace Barotrauma
         private bool editingHUDRefreshPending;
         private float editingHUDRefreshTimer;
 
+        public void Configure()
+        {
+            foreach(var component in components)
+            {
+                if (component.CanBeConfigured)
+                    component.ShowConfigurationUI();
+            }
+        }
 
         private readonly Dictionary<DecorativeSprite, DecorativeSprite.State> spriteAnimState = new Dictionary<DecorativeSprite, DecorativeSprite.State>();
 
@@ -777,7 +785,7 @@ namespace Barotrauma
                 foreach (ItemComponent ic in activeComponents)
                 {
                     if (ic.ShouldDrawHUD(character) &&
-                        (ic.CanBeSelected || (character.HasEquippedItem(this) && ic.DrawHudWhenEquipped)))
+                        ((ic.CanBeSelected || (character.HasEquippedItem(this) && ic.DrawHudWhenEquipped )) || ic.IsShowingConfigurationUI))
                     {
                         activeHUDs.Add(ic);
                     }

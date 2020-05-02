@@ -39,6 +39,7 @@ namespace Barotrauma.Items.Components
 
         protected bool canBePicked;
         protected bool canBeSelected;
+        protected bool canBeConfigured;
         protected bool canBeCombined;
         protected bool removeOnCombined;
 
@@ -147,6 +148,13 @@ namespace Barotrauma.Items.Components
         {
             get { return canBeSelected; }
             set { canBeSelected = value; }
+        }
+
+        [Serialize(false, false, description: "Can the item be configured by secondary interacting with it.")]
+        public bool CanBeConfigured
+        {
+            get { return canBeConfigured; }
+            set { canBeConfigured = value; }
         }
 
         [Serialize(false, false, description: "Can the item be combined with other items of the same type.")]

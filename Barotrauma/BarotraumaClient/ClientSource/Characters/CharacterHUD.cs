@@ -307,7 +307,7 @@ namespace Barotrauma
 
                     foreach (ItemComponent ic in item.Components)
                     {
-                        if (ic.DrawHudWhenEquipped) ic.DrawHUD(spriteBatch, character);
+                        if (ic.DrawHudWhenEquipped || ic.IsShowingConfigurationUI) ic.DrawHUD(spriteBatch, character);
                     }
                 }
             }
