@@ -105,15 +105,12 @@ namespace Barotrauma.Items.Components
 
         public void ClientWrite(IWriteMessage msg, object[] extraData = null)
         {
-            MultiChannelConfig.WriteMultiChannelConfigMsg(msg);
+            SharedWriteChannelGroups(msg);
         }
 
         public void ClientRead(ServerNetObject type, IReadMessage msg, float sendingTime)
         {
-            // Read channel updates from server - in order for clients to sync send/recieve settings
-            // All checks are still done on the server
-            MultiChannelConfig.Clear();
-            MultiChannelConfig.ReadMultiChannelConfigMsg(msg);
+            SharedReadChannelGroups(msg);
         }
     }
 }
