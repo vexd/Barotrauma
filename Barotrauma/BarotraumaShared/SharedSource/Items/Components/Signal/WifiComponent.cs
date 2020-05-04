@@ -38,7 +38,6 @@ namespace Barotrauma.Items.Components
         {
             ID = id;
             Name = "Group_" + ID.ToString();
-            AddChannel(0, true, true);
         }
 
         public void WriteStateMsg(IWriteMessage msg)
@@ -63,6 +62,8 @@ namespace Barotrauma.Items.Components
             string name = msg.ReadString();
             Name = name;
 
+            List<int> activeIDs = new List<int>();
+
             //Per channel setting
             for (int i = 0; i < count; i++)
             {
@@ -80,6 +81,23 @@ namespace Barotrauma.Items.Components
                 else
                 {
                     Channels.Add(channelId, new ChannelSetting(channelId, send, recieve));
+                }
+
+                activeIDs.Add(channelId);
+            }
+
+            //Remove inactive channel Ids
+            {
+                List<int> inactiveIDs = new List<int>();
+                foreach (var kvp in Channels)
+                {
+                    if (!activeIDs.Contains(kvp.Key))
+                        inactiveIDs.Add(kvp.Key);
+                }
+
+                foreach (var ID in inactiveIDs)
+                {
+                    Channels.Remove(ID);
                 }
             }
         }
@@ -303,6 +321,16 @@ namespace Barotrauma.Items.Components
             set;
         }
 
+        enum CommChannelIds : int
+        {
+            ShipWide = 0,
+            Command,
+            Engineering,
+            Medical,
+            Security,
+            Traitor,
+        };
+
         public WifiComponent(Item item, XElement element)
             : base (item, element)
         {
@@ -315,10 +343,63 @@ namespace Barotrauma.Items.Components
             wifiLocalChannelGroupNetID = serverBaseGroupNetID;
 #endif
 
-            //Create a default send/recieve on channel 0 so the wifi works!
-            ChannelGroup defaultGroup = AddChannelGroup(0,false);
-            activeChannelGroup = defaultGroup;
+            SetupCommChannels(element);
             InitProjSpecific(element);
+        }
+
+        private void SetupCommChannels(XElement element)
+        {
+            int baseID = serverBaseGroupNetID;
+            int idOffset = 0;
+            {
+               
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "ShipWide";
+                group.AddChannel((int)CommChannelIds.ShipWide, true, true);
+                group.AddChannel((int)CommChannelIds.Command, false, true);
+                ;
+            }
+
+            {
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "Command";
+                group.AddChannel((int)CommChannelIds.Command, true, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
+            }
+
+            {
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "Engineering";
+                group.AddChannel((int)CommChannelIds.Engineering, true, true);
+                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
+            }
+
+            {
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "Medical";
+                group.AddChannel((int)CommChannelIds.Medical, true, true);
+                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
+            }
+
+            {
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "Security";
+                group.AddChannel((int)CommChannelIds.Security, true, true);
+                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
+            }
+
+            //TODO need to randomise traitor comms channel and sync it secretly
+            {
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "Traitor";
+                group.AddChannel((int)CommChannelIds.Traitor, true, true);
+                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
+            }
+
         }
 
         public bool CanTransmit()
@@ -534,11 +615,14 @@ namespace Barotrauma.Items.Components
 
         public void SharedReadChannelGroups(IReadMessage msg)
         {
+            List<int> activeGroups = new List<int>();
+
             //Channel Group sets
             int numGroups = msg.ReadInt32();
             for (int i = 0; i < numGroups; i++)
             {
                 int channelGroupID = msg.ReadInt32();
+                activeGroups.Add(channelGroupID);
 
                 //locate existing group or make a new one
                 ChannelGroup updateGroup = ChannelGroups.Find(itgroup => itgroup.ID == channelGroupID);
@@ -549,6 +633,21 @@ namespace Barotrauma.Items.Components
                 }
                 updateGroup.ReadStateMsg(msg);
               
+            }
+
+            //Remove inactive groups
+            {
+                List<ChannelGroup> inactiveGroups = new List<ChannelGroup>();
+                foreach(var group in ChannelGroups)
+                {
+                    if (!activeGroups.Contains(group.ID))
+                        inactiveGroups.Add(group);
+                }
+
+                foreach (var group in inactiveGroups)
+                {
+                    ChannelGroups.Remove(group);
+                }
             }
 
             {

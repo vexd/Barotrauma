@@ -21,7 +21,7 @@
     </Fabricate>
     <WifiComponent range="35000.0" LinkToChat="true" MinChatMessageInterval="0.0" CanBeConfigured="true">
       <RequiredItems items="mobilebattery" type="Contained" />
-	  <GuiFrame relativesize="0.25,0.22" minsize="420,220" anchor="Center" style="ItemUI" />
+	  <GuiFrame relativesize="0.25,0.4" minsize="420,480" anchor="Center" style="ItemUI" />
     </WifiComponent>
     <ItemContainer capacity="1" hideitems="true">
       <ContainedStateIndicator texture="Content/UI/ContainerIndicators.png" sourcerect="1,70,107,31" />

@@ -107,34 +107,47 @@ namespace Barotrauma.Items.Components
             };
 
             {
-                var titleLayout = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 0.05f), uiElementContainer.RectTransform, Anchor.TopLeft)
+                var titleLayout = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 0.1f), uiElementContainer.RectTransform)
                 {
-                    RelativeOffset = new Vector2(0.05f, 0.05f)
-                }
-                   , isHorizontal: true)
+                    RelativeOffset = new Vector2(0.0f, 0.05f)
+                }, 
+                    isHorizontal: true)
                 {
                     Stretch = true,
                     RelativeSpacing = 0.02f,
-                    ChildAnchor = Anchor.Center,
                 };
 
-                var titletext = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.05f), titleLayout.RectTransform), "Channel Group Configuration");
+                var titletext = new GUITextBlock(new RectTransform(new Vector2(1.0f, 1.0f), titleLayout.RectTransform), "Group Configuration");
                 titleLayout.RectTransform.MinSize = new Point(0, titletext.RectTransform.MinSize.Y);
             }
 
             {
-                var headingsLayout = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 0.05f), uiElementContainer.RectTransform, Anchor.Center)
+                //Edit Name
+                var nameArea = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 0.05f), uiElementContainer.RectTransform), isHorizontal: true)
                 {
-                    RelativeOffset = new Vector2(0.05f, 0.0f)
-                }
-                   , isHorizontal: true)
+                    Stretch = true,
+                    RelativeSpacing = 0.05f
+                };
+                new GUITextBlock(new RectTransform(new Vector2(0.3f, 1.0f), nameArea.RectTransform), TextManager.Get("GroupName"));
+                var nameBox = new GUITextBox(new RectTransform(new Vector2(0.7f, 1.0f), nameArea.RectTransform), group.Name);
+                nameBox.OnTextChanged += (textBox, text) =>
+                {
+                    group.Name = text;
+                    item.CreateClientEvent(this);
+                    return true;
+                };
+
+                nameArea.RectTransform.MinSize = new Point(0, nameBox.RectTransform.MinSize.Y);
+            }
+
+            {
+                var headingsLayout = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 0.1f), uiElementContainer.RectTransform), isHorizontal: true)
                 {
                     Stretch = false,
                     RelativeSpacing = 0.02f,
                     ChildAnchor = Anchor.CenterLeft,
                 };
-                var channelText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "Channel");
-                var nameText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "Name");
+                var channelText = new GUITextBlock(new RectTransform(new Vector2(0.3f, 1.0f), headingsLayout.RectTransform), "Channel");
                 var sendText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "Send");
                 var recvText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "Recv");
             }
@@ -172,11 +185,25 @@ namespace Barotrauma.Items.Components
 
                     var send = new GUITickBox(new RectTransform(new Vector2(0.1f, 0.5f), channelGroupLayout.RectTransform), "")
                     {
-                        UserData = channelSetting
+                        UserData = channelSetting,
+                        Selected = channelSetting.Send,
+                        OnSelected = (box) =>
+                        {
+                            channelSetting.Send = box.Selected;
+                            item.CreateClientEvent(this);
+                            return true;
+                        }
                     };
                     var recv = new GUITickBox(new RectTransform(new Vector2(0.1f, 0.5f), channelGroupLayout.RectTransform), "")
                     {
-                        UserData = channelSetting
+                        UserData = channelSetting,
+                        Selected = channelSetting.Recieve,
+                        OnSelected = (box) =>
+                        {
+                            channelSetting.Recieve = box.Selected;
+                            item.CreateClientEvent(this);
+                            return true;
+                        }
                     };
                    
                     var removeButton = new GUIButton(new RectTransform(new Vector2(0.2f, 1.0f), channelGroupLayout.RectTransform),
@@ -196,7 +223,7 @@ namespace Barotrauma.Items.Components
                             return true;
                         }
                     };
-                    channelGroupLayout.RectTransform.MinSize = new Point(0, textblock.RectTransform.MinSize.Y);
+                    channelGroupLayout.RectTransform.MinSize = new Point(0, send.Box.RectTransform.MinSize.Y);
                 }
             }
 
@@ -296,7 +323,7 @@ namespace Barotrauma.Items.Components
                         ChildAnchor = Anchor.CenterLeft,
                     };
 
-                    var active = new GUITickBox(new RectTransform(new Vector2(0.1f, 0.5f), channelGroupLayout.RectTransform), "")
+                    var active = new GUITickBox(new RectTransform(new Vector2(0.1f, 1.0f), channelGroupLayout.RectTransform), "")
                     {
                         UserData = channelGroup
                     };
