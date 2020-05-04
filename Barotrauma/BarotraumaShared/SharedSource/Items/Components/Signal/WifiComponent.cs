@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Channels;
 using System.Xml.Linq;
 
 namespace Barotrauma.Items.Components
@@ -14,24 +15,42 @@ namespace Barotrauma.Items.Components
         public bool Send { get; set; } = true;
         public bool Recieve { get; set; } = true;
 
-        public ChannelSetting(bool send, bool recieve)
+        public int ChannelId { get; set; }
+
+        public ChannelSetting(int channel, bool send, bool recieve)
         {
             Send = send;
             Recieve = recieve;
+            ChannelId = channel;
         }
     }
 
     public class ChannelGroup
     {
-        private Dictionary<int, ChannelSetting>  Channels = new Dictionary<int, ChannelSetting>();
+        internal Dictionary<int, ChannelSetting>  Channels = new Dictionary<int, ChannelSetting>();
+
+        public string Name { get; set; } = "Channel Group";
+
+        // Immutable over liftime
+        public int ID { get; }
+
+        public ChannelGroup(int id)
+        {
+            ID = id;
+            Name = "Group_" + ID.ToString();
+            AddChannel(0, true, true);
+        }
 
         public void WriteStateMsg(IWriteMessage msg)
         {
-            // Write channel updates to server to allow send/recieve
+            //Group info
             msg.Write(Channels.Count);
+            msg.Write(Name);
+
+            //Per channel setting
             foreach (var kvp in Channels)
             {
-                msg.Write(kvp.Key);
+                msg.Write(kvp.Value.ChannelId);
                 msg.Write(kvp.Value.Send);
                 msg.Write(kvp.Value.Recieve);
             }
@@ -39,15 +58,29 @@ namespace Barotrauma.Items.Components
 
         public void ReadStateMsg(IReadMessage msg)
         {
+            //Group info
             int count = msg.ReadInt32();
+            string name = msg.ReadString();
+            Name = name;
 
+            //Per channel setting
             for (int i = 0; i < count; i++)
             {
-                int channel = msg.ReadInt32();
+                int channelId = msg.ReadInt32();
                 bool send = msg.ReadBoolean();
                 bool recieve = msg.ReadBoolean();
 
-                Channels.Add(channel, new ChannelSetting(send, recieve));
+                //Locate existing and update or create new setting
+                ChannelSetting setting;
+                if (Channels.TryGetValue(channelId, out setting))
+                {
+                    setting.Send = send;
+                    setting.Recieve = recieve;
+                }
+                else
+                {
+                    Channels.Add(channelId, new ChannelSetting(channelId, send, recieve));
+                }
             }
         }
 
@@ -90,12 +123,31 @@ namespace Barotrauma.Items.Components
             return false;
         }
 
-        public bool AddChannel(int channel, bool send, bool recieve)
+        private int lastAddedChannel = 0;
+        const int MAX_AUTO_CHANNELS = 10000;
+
+        public bool AddChannel()
+        {
+            for(int channel=0;channel<MAX_AUTO_CHANNELS;channel++)
+            {
+                ChannelSetting existing;
+                if (!Channels.TryGetValue(channel, out existing))
+                {
+                    Channels.Add(channel, new ChannelSetting(channel, true, true));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool AddChannel(int channel, bool send=true, bool recieve=true)
         {
             ChannelSetting existing;
             if (!Channels.TryGetValue(channel, out existing))
             {
-                Channels.Add(channel, new ChannelSetting(send, recieve));
+                Channels.Add(channel, new ChannelSetting(channel, send, recieve));
+                lastAddedChannel = channel;
                 return true;
             }
 
@@ -105,6 +157,12 @@ namespace Barotrauma.Items.Components
         public bool RemoveChannel(int channel)
         {
             bool ret = Channels.Remove(channel);
+            return ret;
+        }
+
+        public bool RemoveChannel(ChannelSetting channel)
+        {
+            bool ret = Channels.Remove(channel.ChannelId);
             return ret;
         }
 
@@ -149,28 +207,34 @@ namespace Barotrauma.Items.Components
 
         private string prevSignal;
 
+        private int wifiLocalChannelGroupNetID = 0;
+
+        private const int clientBaseGroupNetID = 0;
+        private const int serverBaseGroupNetID = 65535;
+
         //Channel group container
         List<ChannelGroup> ChannelGroups = new List<ChannelGroup>();
 
-        //Active selected channel group
-        private int activeChannelGroupIndex = 0;
-
         public int ActiveChannelGroupIndex
         {
-            get { return activeChannelGroupIndex; }
-            set
-            {
-                Debug.Assert(value < ChannelGroups.Count && value >= 0);
-                activeChannelGroupIndex = value;
-            }
+            get { return ChannelGroups.IndexOf(activeChannelGroup); }
+            set { activeChannelGroup = ChannelGroups[value]; }
         }
 
+        private ChannelGroup activeChannelGroup = null;
+
         //Channel group accessor - used for comms filtering in multi-channel mode
-        public ChannelGroup ActiveChannelGroup { 
-            get 
-            { 
-                Debug.Assert(ActiveChannelGroupIndex < ChannelGroups.Count && ActiveChannelGroupIndex >= 0);
-                return ChannelGroups[ActiveChannelGroupIndex];
+        public ChannelGroup ActiveChannelGroup
+        {
+            get { return activeChannelGroup; }
+            set {
+                if (activeChannelGroup != value)
+                {
+                    activeChannelGroup = value;
+#if CLIENT
+                    item.CreateClientEvent(this);
+#endif
+                }
             }
         }
 
@@ -245,11 +309,15 @@ namespace Barotrauma.Items.Components
             list.Add(this);
             IsActive = true;
 
-            //Create a default send/recieve on channel 0 so the wifi works!
-            ChannelGroup defaultGroup = AddChannelGroup();
-            defaultGroup.AddChannel(0, true, true);
-            ActiveChannelGroupIndex = 0;
+#if CLIENT
+            wifiLocalChannelGroupNetID = clientBaseGroupNetID;
+#elif SERVER
+            wifiLocalChannelGroupNetID = serverBaseGroupNetID;
+#endif
 
+            //Create a default send/recieve on channel 0 so the wifi works!
+            ChannelGroup defaultGroup = AddChannelGroup(0,false);
+            activeChannelGroup = defaultGroup;
             InitProjSpecific(element);
         }
 
@@ -317,16 +385,37 @@ namespace Barotrauma.Items.Components
             return removed;
         }
 
-        public ChannelGroup AddChannelGroup()
+        
+
+        public ChannelGroup AddChannelGroup(int overrideID=-1,bool broadcast = true)
         {
-            var newGroup = new ChannelGroup();
+            int groupID = 0;
+            if (overrideID != -1)
+            {
+                groupID = overrideID;
+            }
+            else
+            {
+                wifiLocalChannelGroupNetID++;
+                groupID = wifiLocalChannelGroupNetID;
+            }
+
+            var newGroup = new ChannelGroup(groupID);
             ChannelGroups.Add(newGroup);
+#if CLIENT
+            if(broadcast)
+                item.CreateClientEvent(this);
+#endif
             return newGroup;
         }
 
         public void RemoveChanelGroup(ChannelGroup group)
         {
-            ChannelGroups.Remove(group);
+            bool removed = ChannelGroups.Remove(group);
+#if CLIENT
+            if (removed)
+                item.CreateClientEvent(this);
+#endif
         }
 
         partial void InitProjSpecific(XElement element);
@@ -434,26 +523,40 @@ namespace Barotrauma.Items.Components
             msg.Write(ChannelGroups.Count);
             foreach (var channelGroup in ChannelGroups)
             {
+                msg.Write(channelGroup.ID);
                 channelGroup.WriteStateMsg(msg);
             }
 
             //Active channel group
-            msg.Write(activeChannelGroupIndex);
+            int activeChannelGroupId = activeChannelGroup!=null ? activeChannelGroup.ID : -1;
+            msg.Write(activeChannelGroupId);
         }
 
         public void SharedReadChannelGroups(IReadMessage msg)
         {
             //Channel Group sets
-            ChannelGroups.Clear();
             int numGroups = msg.ReadInt32();
             for (int i = 0; i < numGroups; i++)
             {
-                ChannelGroup group = AddChannelGroup();
-                group.ReadStateMsg(msg);
+                int channelGroupID = msg.ReadInt32();
+
+                //locate existing group or make a new one
+                ChannelGroup updateGroup = ChannelGroups.Find(itgroup => itgroup.ID == channelGroupID);
+                if (updateGroup == null)
+                {
+                    updateGroup = new ChannelGroup(channelGroupID);
+                    ChannelGroups.Add(updateGroup);
+                }
+                updateGroup.ReadStateMsg(msg);
+              
             }
 
-            //Active channel group
-            activeChannelGroupIndex = msg.ReadInt32();
+            {
+                //Active channel group
+                int activeChannelGroupID = msg.ReadInt32();
+                ChannelGroup activeGroup = ChannelGroups.Find(itgroup => itgroup.ID == activeChannelGroupID);
+                activeChannelGroup = activeGroup;
+            }
         }
     }
 }
