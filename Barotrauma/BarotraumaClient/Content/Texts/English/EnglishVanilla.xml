@@ -471,7 +471,11 @@
 <none>None</none>
 <any>Any</any>
 <close>Close</close>
+<add>Add</add>
+<config>Config</config>
+<remove>Remove</remove>
 <cancel>Cancel</cancel>
+<groupname>Group Name</groupname>
 <done>Done</done>
 <delete>Delete</delete>
 <load>Load</load>
