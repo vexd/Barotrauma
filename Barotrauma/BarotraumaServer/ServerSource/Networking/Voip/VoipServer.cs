@@ -93,7 +93,14 @@ namespace Barotrauma.Networking
                 ChatMessage.CanUseRadio(sender.Character, out WifiComponent senderRadio) && 
                 ChatMessage.CanUseRadio(recipient.Character, out WifiComponent recipientRadio))
             {
-                if (recipientRadio.CanReceive(senderRadio)) { return true; }
+                if (recipientRadio.CanReceive(senderRadio))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
             //otherwise do a distance check
