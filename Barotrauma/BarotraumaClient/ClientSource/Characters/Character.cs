@@ -718,6 +718,35 @@ namespace Barotrauma
 
             if (this == controlled)
             {
+                if ((PlayerInput.KeyDown(InputType.Voice) || PlayerInput.KeyDown(InputType.LocalVoice)) &&
+                         GUI.KeyboardDispatcher.Subscriber == null)
+                {
+                    bool isLocalChat = VoipCapture.Instance.ForceLocal;
+                    string BroadcastGroupName = "Local";
+                    ShowSpeechBubble(1.25f, isLocalChat ? Color.White : Color.Red);
+
+                    if (!isLocalChat)
+                    {
+                        var radioItem = Inventory.Items.FirstOrDefault(it => it != null && it.GetComponent<WifiComponent>() != null);
+                        if (radioItem != null && HasEquippedItem(radioItem))
+                        {
+                            var wifiComp = radioItem.GetComponent<WifiComponent>();
+                            BroadcastGroupName = wifiComp.ActiveChannelGroup.Name;
+                        }
+                    }
+
+                    Vector2 namePos = new Vector2(pos.X, pos.Y - 10.0f - (5.0f / cam.Zoom)) - GUI.Font.MeasureString(BroadcastGroupName) * 0.5f / cam.Zoom;
+                    GUI.Font.DrawString(spriteBatch,
+                        BroadcastGroupName,
+                        namePos,
+                         Color.White, 0.0f,
+                         Vector2.Zero,
+                         1.0f / cam.Zoom,
+                         SpriteEffects.None,
+                         0.0f);
+                }
+               
+
                 if (DebugDrawInteract)
                 {
                     Vector2 cursorPos = cam.ScreenToWorld(PlayerInput.MousePosition);
