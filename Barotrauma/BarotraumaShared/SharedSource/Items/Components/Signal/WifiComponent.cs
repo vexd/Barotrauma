@@ -323,7 +323,8 @@ namespace Barotrauma.Items.Components
 
         enum CommChannelIds : int
         {
-            ShipWide = 0,
+            Default = 0,
+            ShipWide,
             Command,
             Engineering,
             Medical,
@@ -354,37 +355,44 @@ namespace Barotrauma.Items.Components
             {
                
                 var group = AddChannelGroup(baseID + (idOffset++));
-                group.Name = "ShipWide";
-                group.AddChannel((int)CommChannelIds.ShipWide, true, true);
-                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.Name = "Default";
+                group.AddChannel((int)CommChannelIds.Default, true, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
                 ActiveChannelGroup = group;
             }
 
             {
                 var group = AddChannelGroup(baseID + (idOffset++));
-                group.Name = "Command";
+                group.Name = "Shipwide";
+                group.AddChannel((int)CommChannelIds.ShipWide, true, true);
+            }
+
+            {
+                var group = AddChannelGroup(baseID + (idOffset++));
+                group.Name = "Commander";
                 group.AddChannel((int)CommChannelIds.Command, true, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
             }
 
             {
                 var group = AddChannelGroup(baseID + (idOffset++));
                 group.Name = "Engineering";
                 group.AddChannel((int)CommChannelIds.Engineering, true, true);
-                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
             }
 
             {
                 var group = AddChannelGroup(baseID + (idOffset++));
                 group.Name = "Medical";
                 group.AddChannel((int)CommChannelIds.Medical, true, true);
-                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
             }
 
             {
                 var group = AddChannelGroup(baseID + (idOffset++));
                 group.Name = "Security";
                 group.AddChannel((int)CommChannelIds.Security, true, true);
-                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
             }
 
             //TODO need to randomise traitor comms channel and sync it secretly
@@ -392,7 +400,7 @@ namespace Barotrauma.Items.Components
                 var group = AddChannelGroup(baseID + (idOffset++));
                 group.Name = "Traitor";
                 group.AddChannel((int)CommChannelIds.Traitor, true, true);
-                group.AddChannel((int)CommChannelIds.Command, false, true);
+                group.AddChannel((int)CommChannelIds.ShipWide, false, true);
             }
 
         }

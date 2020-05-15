@@ -9,6 +9,7 @@
     <Version>3.5.0.0</Version>
     <Authors>Ian Qvist</Authors>
     <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;Release_NoSteam</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -7,6 +7,7 @@
     <Platforms>AnyCPU;x64</Platforms>
     <Authors>Game Analytics</Authors>
     <Copyright>Copyright (c) 2016 Game Analytics</Copyright>
+    <Configurations>Debug;Release;Release_NoSteam</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -21,7 +22,15 @@
     <DefineConstants>TRACE;MONO</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|AnyCPU'">
+    <DefineConstants>TRACE;MONO</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DefineConstants>TRACE;MONO</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|x64'">
     <DefineConstants>TRACE;MONO</DefineConstants>
   </PropertyGroup>
 

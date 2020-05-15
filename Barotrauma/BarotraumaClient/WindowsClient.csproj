@@ -11,7 +11,7 @@
     <Platforms>AnyCPU;x64</Platforms>
     <AssemblyName>Barotrauma</AssemblyName>
     <ApplicationIcon>..\BarotraumaShared\Icon.ico</ApplicationIcon>
-    <Configurations>Debug;Release;Unstable</Configurations>
+    <Configurations>Debug;Release;Unstable;Release_NoSteam</Configurations>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
@@ -33,6 +33,12 @@
     <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|AnyCPU'">
+    <DefineConstants>TRACE;CLIENT;WINDOWS;X64</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unstable|AnyCPU'">
     <DefineConstants>TRACE;CLIENT;WINDOWS;USE_STEAM</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
@@ -40,6 +46,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DefineConstants>TRACE;CLIENT;WINDOWS;X64;USE_STEAM</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|x64'">
     <DefineConstants>TRACE;CLIENT;WINDOWS;X64;USE_STEAM</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>

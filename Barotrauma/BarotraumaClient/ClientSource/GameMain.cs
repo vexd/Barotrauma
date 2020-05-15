@@ -39,7 +39,9 @@ namespace Barotrauma
 
         public static NetLobbyScreen NetLobbyScreen;
         public static ServerListScreen ServerListScreen;
+#if USE_STEAM
         public static SteamWorkshopScreen SteamWorkshopScreen;
+#endif
 
         public static SubEditorScreen SubEditorScreen;
         public static ParticleEditorScreen ParticleEditorScreen;
@@ -451,6 +453,7 @@ namespace Barotrauma
             GUI.Init(Window, Config.SelectedContentPackages, GraphicsDevice);
             DebugConsole.Init();
 
+#if USE_STEAM
             if (Config.AutoUpdateWorkshopItems)
             {
                 bool waitingForWorkshopUpdates = true;
@@ -472,7 +475,7 @@ namespace Barotrauma
                     });
                 }
             }
-            
+#endif
 
             if (SelectedPackages.None())
             {
@@ -611,10 +614,12 @@ namespace Barotrauma
 
             CheckContentPackage();
 
+#if USE_STEAM
             foreach (string steamError in SteamManager.InitializationErrors)
             {
                 new GUIMessageBox(TextManager.Get("Error"), TextManager.Get(steamError));
             }
+#endif
 
             TitleScreen.LoadState = 100.0f;
             hasLoaded = true;
@@ -702,10 +707,12 @@ namespace Barotrauma
             DebugConsole.NewMessage(ConnectName + ", " + ConnectEndpoint, Color.Yellow);
         }
 
+#if USE_STEAM
         public void OnLobbyJoinRequested(Steamworks.Data.Lobby lobby, Steamworks.SteamId friendId)
-    {
+        {
             SteamManager.JoinLobby(lobby.Id, true);
         }
+#endif
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -799,8 +806,9 @@ namespace Barotrauma
 
                             GameMain.MainMenuScreen.Select();
                         }
+#if USE_STEAM
                         Steam.SteamManager.JoinLobby(ConnectLobby, true);
-
+#endif
                         ConnectLobby = 0;
                         ConnectEndpoint = null;
                         ConnectName = null;
@@ -1127,7 +1135,7 @@ namespace Barotrauma
             var linkHolder = new GUILayoutGroup(new RectTransform(new Vector2(1.0f, 1.0f), msgBox.Content.RectTransform)) { Stretch = true, RelativeSpacing = 0.025f };
             linkHolder.RectTransform.MaxSize = new Point(int.MaxValue, linkHolder.Rect.Height);
 
-#if !UNSTABLE
+#if !UNSTABLE && USE_STEAM
             new GUIButton(new RectTransform(new Vector2(1.0f, 1.0f), linkHolder.RectTransform), TextManager.Get("bugreportfeedbackform"), style: "MainMenuGUIButton", textAlignment: Alignment.Left)
             {
                 UserData = "https://steamcommunity.com/app/602960/discussions/1/",

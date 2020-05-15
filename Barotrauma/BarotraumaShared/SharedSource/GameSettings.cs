@@ -703,7 +703,11 @@ namespace Barotrauma
         {
             get
             {
+#if USE_STEAM
                 return string.IsNullOrWhiteSpace(playerName) ? Steam.SteamManager.GetUsername() : playerName;
+#else
+                return string.IsNullOrWhiteSpace(playerName)? "Player" : playerName;
+#endif
             }
             set
             {
@@ -791,6 +795,7 @@ namespace Barotrauma
 
         private void OnModFolderUpdate(object sender, FileSystemEventArgs e)
         {
+#if USE_STEAM
             if (SuppressModFolderWatcher || (GameMain.NetworkMember?.IsClient ?? false)) { return; }
             switch (e.ChangeType)
             {
@@ -848,6 +853,7 @@ namespace Barotrauma
                     }
                     break;
             }
+#endif
         }
 
         private void LoadDefaultConfig(bool setLanguage = true)

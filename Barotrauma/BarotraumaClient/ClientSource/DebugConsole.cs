@@ -468,10 +468,12 @@ namespace Barotrauma
                 }
             }, isCheat: true));
 
+#if USE_STEAM
             commands.Add(new Command("steamnetdebug", "steamnetdebug: Toggles Steamworks debug logging.", (string[] args) =>
             {
                 SteamManager.NetworkingDebugLog = !SteamManager.NetworkingDebugLog;
             }));
+#endif
 
             AssignRelayToServer("kick", false);
             AssignRelayToServer("kickid", false);

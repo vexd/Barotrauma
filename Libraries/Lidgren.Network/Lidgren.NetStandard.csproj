@@ -8,9 +8,14 @@
     <Copyright>Copyright (c) 2015 lidgren</Copyright>
     <Version>2012.1.7.0</Version>
     <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;Release_NoSteam</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;3021</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|AnyCPU'">
     <NoWarn>1701;1702;3021</NoWarn>
   </PropertyGroup>
 
@@ -23,6 +28,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <NoWarn>1701;1702;3021</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|x64'">
     <NoWarn>1701;1702;3021</NoWarn>
   </PropertyGroup>
 

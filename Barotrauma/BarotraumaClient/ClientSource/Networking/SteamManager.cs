@@ -12,6 +12,7 @@ using System.Xml;
 using Color = Microsoft.Xna.Framework.Color;
 using System.Runtime.InteropServices;
 
+#if USE_STEAM
 namespace Barotrauma.Steam
 {
     static partial class SteamManager
@@ -468,7 +469,7 @@ namespace Barotrauma.Steam
             return 0;
         }
 
-        #region Connecting to servers
+#region Connecting to servers
 
         //TODO: reimplement server list queries
 
@@ -507,9 +508,9 @@ namespace Barotrauma.Steam
             Steamworks.SteamUser.EndAuthSession(clientSteamID);
         }
 
-        #endregion
+#endregion
 
-        #region Workshop
+#region Workshop
         
         public const string WorkshopItemPreviewImageFolder = "Workshop";
         public const string PreviewImageName = "PreviewImage.png";
@@ -1588,3 +1589,11 @@ namespace Barotrauma.Steam
 
     }
 }
+#else
+namespace Barotrauma.Steam
+{
+    static partial class SteamManager
+    {
+    }
+}
+#endif

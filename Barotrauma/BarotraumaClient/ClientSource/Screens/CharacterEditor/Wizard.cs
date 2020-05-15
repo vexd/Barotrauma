@@ -327,6 +327,7 @@ namespace Barotrauma.CharacterEditor
                                 };
                                 var createNewPackageButton = new GUIButton(new RectTransform(new Vector2(0.3f / contentPackageNameElement.RectTransform.RelativeSize.X, 1.0f), contentPackageNameElement.RectTransform, Anchor.CenterRight, Pivot.CenterLeft), TextManager.Get("CreateNew"), style: "GUIButtonSmall")
                                 {
+#if USE_STEAM
                                     OnClicked = (btn, userdata) =>
                                     {
                                         if (string.IsNullOrEmpty(contentPackageNameElement.Text))
@@ -349,6 +350,9 @@ namespace Barotrauma.CharacterEditor
                                         return true;
                                     },
                                     Enabled = false
+#else
+                                    Enabled = false
+#endif
                                 };
                                 Color textColor = contentPackageNameElement.TextColor;
                                 contentPackageNameElement.TextColor *= 0.6f;

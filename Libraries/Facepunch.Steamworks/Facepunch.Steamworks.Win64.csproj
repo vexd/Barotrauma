@@ -9,6 +9,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<Platforms>AnyCPU;x64</Platforms>
+		<Configurations>Debug;Release;Release_NoSteam</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -35,11 +36,19 @@
 	  <NoWarn>1701;1702;1591;1587</NoWarn>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release_NoSteam|netstandard2.1|x64'">
+	  <NoWarn>1701;1702;1591;1587</NoWarn>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|x64'">
 	  <NoWarn>1701;1702;1591;1587</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
+	  <NoWarn>1701;1702;1591;1587</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release_NoSteam|netstandard2.1|AnyCPU'">
 	  <NoWarn>1701;1702;1591;1587</NoWarn>
 	</PropertyGroup>
 

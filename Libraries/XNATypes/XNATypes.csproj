@@ -5,6 +5,7 @@
     <Platforms>AnyCPU;x64</Platforms>
     <Authors></Authors>
     <Company />
+    <Configurations>Debug;Release;Release_NoSteam</Configurations>
   </PropertyGroup>
 
 </Project>

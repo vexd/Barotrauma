@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#if USE_STEAM
+
 namespace Barotrauma
 {
     class SteamWorkshopScreen : Screen
@@ -1704,6 +1706,7 @@ namespace Barotrauma
 
         private void PublishWorkshopItem()
         {
+#if USE_STEAM
             if (itemContentPackage == null || itemEditor == null) { return; }
 
 #if UNSTABLE
@@ -1727,9 +1730,10 @@ namespace Barotrauma
             if (workshopPublishStatus == null) { return; }
             CoroutineManager.StartCoroutine(WaitForPublish(workshopPublishStatus), "WaitForPublish");
 #endif
-
+#endif
         }
 
+#if USE_STEAM
         private IEnumerable<object> WaitForPublish(SteamManager.WorkshopPublishStatus workshopPublishStatus)
         {
             var item = workshopPublishStatus.Item;
@@ -1783,6 +1787,7 @@ namespace Barotrauma
             createItemFrame.ClearChildren();
             SelectTab(Tab.Browse);
         }
+#endif
 
 #region UI management
 
@@ -1814,3 +1819,4 @@ namespace Barotrauma
 #endregion
     }
 }
+#endif

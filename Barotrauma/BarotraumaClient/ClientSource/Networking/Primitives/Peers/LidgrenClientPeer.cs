@@ -51,6 +51,7 @@ namespace Barotrauma.Networking
 
             if (SteamManager.IsInitialized)
             {
+#if USE_STEAM
                 steamAuthTicket = SteamManager.GetAuthSessionTicket();
                 //TODO: wait for GetAuthSessionTicketResponse_t
 
@@ -58,6 +59,7 @@ namespace Barotrauma.Networking
                 {
                     throw new Exception("GetAuthSessionTicket returned null");
                 }
+#endif
             }
 
             incomingLidgrenMessages = new List<NetIncomingMessage>();

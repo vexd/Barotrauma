@@ -324,6 +324,7 @@ namespace Barotrauma.Networking
 
                 translatedEndpoint = IPEndPoint;
             }
+#if USE_STEAM
             else if (endpoint is UInt64)
             {
                 if (steamP2POwner)
@@ -337,6 +338,7 @@ namespace Barotrauma.Networking
 
                 translatedEndpoint = endpoint;
             }
+#endif
             clientPeer.OnDisconnect = OnDisconnect;
             clientPeer.OnDisconnectMessageReceived = HandleDisconnectMessage;
             clientPeer.OnInitializationComplete = () =>
@@ -1654,6 +1656,7 @@ namespace Barotrauma.Networking
                 }
                 if (updateClientListId) { LastClientListUpdateID = listId; }
 
+#if USE_STEAM
                 if (clientPeer is SteamP2POwnerPeer)
                 {
                     TaskPool.Add(Steamworks.SteamNetworkingUtils.WaitForPingDataAsync(), (task) =>
@@ -1663,6 +1666,7 @@ namespace Barotrauma.Networking
 
                     Steam.SteamManager.UpdateLobby(serverSettings);
                 }
+#endif
             }
         }
 
@@ -1767,10 +1771,12 @@ namespace Barotrauma.Networking
                                 serverSettings.Voting.AllowSubVoting = allowSubVoting;
                                 serverSettings.Voting.AllowModeVoting = allowModeVoting;
 
+#if USE_STEAM
                                 if (clientPeer is SteamP2POwnerPeer)
                                 {
                                     Steam.SteamManager.UpdateLobby(serverSettings);
                                 }
+#endif
 
                                 GUI.KeyboardDispatcher.Subscriber = prevDispatcher;
                             }
@@ -2182,10 +2188,12 @@ namespace Barotrauma.Networking
         {
             allowReconnect = false;
 
+#if USE_STEAM
             if (clientPeer is SteamP2PClientPeer || clientPeer is SteamP2POwnerPeer)
             {
                 SteamManager.LeaveLobby();
             }
+#endif
 
             clientPeer?.Close();
             clientPeer = null;

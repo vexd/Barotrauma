@@ -284,7 +284,9 @@ namespace Barotrauma
                 client ??= GameMain.Server.ConnectedClients.Find(c => c.ID == id);
             }
             client ??= GameMain.Server.ConnectedClients.Find(c => c.EndpointMatches(arg));
+#if USE_STEAM
             client ??= GameMain.Server.ConnectedClients.Find(c => c.SteamID == Steam.SteamManager.SteamIDStringToUInt64(arg));
+#endif
             return client;
         }
 

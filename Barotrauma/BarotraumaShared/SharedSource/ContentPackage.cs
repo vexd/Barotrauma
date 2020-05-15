@@ -590,6 +590,7 @@ namespace Barotrauma
             }
 
             string[] modDirectories = Directory.GetDirectories("Mods");
+#if USE_STEAM
             foreach (string modDirectory in modDirectories)
             {
                 if (System.IO.Path.GetFileName(modDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar)) == "ExampleMod") { continue; }
@@ -605,6 +606,7 @@ namespace Barotrauma
                     List.Add(new ContentPackage(modFilePath));
                 }
             }
+#endif
 
             List = List
                 .OrderByDescending(p => p.CorePackage)

@@ -443,10 +443,12 @@ namespace Barotrauma
 
             GameAnalyticsManager.SetCustomDimension01("");
 
+#if USE_STEAM
             if (GameMain.SteamWorkshopScreen != null)
             {
                 CoroutineManager.StartCoroutine(GameMain.SteamWorkshopScreen.RefreshDownloadState());
             }
+#endif
 
 #if OSX
             // Hack for adjusting the viewport properly after splash screens on older Macs
@@ -608,7 +610,9 @@ namespace Barotrauma
                     break;
                 case Tab.SteamWorkshop:
                     if (!Steam.SteamManager.IsInitialized) return false;
+#if USE_STEAM
                     CoroutineManager.StartCoroutine(SelectScreenWithWaitCursor(GameMain.SteamWorkshopScreen));
+#endif
                     break;
                 case Tab.Credits:
                     titleText.Visible = false;
@@ -830,7 +834,9 @@ namespace Barotrauma
         private bool SteamWorkshopClicked(GUIButton button, object obj)
         {
             if (!Steam.SteamManager.IsInitialized) { return false; }
+#if USE_STEAM
             GameMain.SteamWorkshopScreen.Select();
+#endif
             return true;
         }
 
@@ -1106,7 +1112,7 @@ namespace Barotrauma
             GameMain.LobbyScreen.Select();
         }
 
-        #region UI Methods
+#region UI Methods
         private void CreateCampaignSetupUI()
         {
             menuTabs[(int)Tab.NewGame].ClearChildren();
@@ -1362,7 +1368,7 @@ namespace Barotrauma
             playstyleDescription.TextAlignment = playstyleDescription.WrappedText.Contains('\n') ?
                Alignment.CenterLeft : Alignment.Center;
         }
-        #endregion
+#endregion
 
         private void FetchRemoteContent()
         {

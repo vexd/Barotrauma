@@ -6,6 +6,8 @@ using Barotrauma.Steam;
 using System.Linq;
 using System.Threading;
 
+#if USE_STEAM
+
 namespace Barotrauma.Networking
 {
     class SteamP2POwnerPeer : ClientPeer
@@ -445,3 +447,5 @@ namespace Barotrauma.Networking
 #endif
     }
 }
+
+#endif

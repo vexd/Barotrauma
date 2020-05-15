@@ -202,7 +202,11 @@ namespace Barotrauma
 
             if (string.IsNullOrEmpty(ClientNameBox.Text))
             {
+#if USE_STEAM
                 ClientNameBox.Text = SteamManager.GetUsername();
+#else
+                ClientNameBox.Text = "Sailor";
+#endif
             }
             ClientNameBox.OnTextChanged += (textbox, text) =>
             {
@@ -592,10 +596,12 @@ namespace Barotrauma
                         {
                             JoinServer(selectedServer.IP + ":" + selectedServer.Port, selectedServer.ServerName);
                         }
+#if USE_STEAM
                         else if (selectedServer.LobbyID != 0)
                         {
                             Steam.SteamManager.JoinLobby(selectedServer.LobbyID, true);
                         }
+#endif
                         else
                         {
                             new GUIMessageBox("", TextManager.Get("ServerOffline"));
@@ -740,7 +746,11 @@ namespace Barotrauma
             info.ServerName = serverSettings.ServerName;
             info.ServerMessage = serverSettings.ServerMessageText;
             info.OwnerID = steamId;
+#if USE_STEAM
             info.LobbyID = SteamManager.CurrentLobbyID;
+#else
+            info.LobbyID = 0;
+#endif
             info.IP = ip;
             info.Port = port;
             info.GameMode = GameMain.NetLobbyScreen.SelectedMode?.Identifier ?? "";
@@ -1494,6 +1504,7 @@ namespace Barotrauma
             }
 
             recentServers.Concat(favoriteServers).ForEach(si => si.OwnerVerified = false);
+#if USE_STEAM
             if (GameMain.Config.UseSteamMatchmaking)
             {
                 serverList.ClearChildren();
@@ -1517,6 +1528,7 @@ namespace Barotrauma
                 }
             }
             else
+#endif
             {
                 CoroutineManager.StartCoroutine(SendMasterServerRequest());
                 waitingForRefresh = false;

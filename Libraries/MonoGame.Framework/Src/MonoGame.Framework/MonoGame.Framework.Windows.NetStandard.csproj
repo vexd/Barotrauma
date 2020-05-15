@@ -9,6 +9,7 @@
     <Authors>MonoGame Team</Authors>
     <Product>MonoGame.Framework</Product>
     <Version>3.7</Version>
+    <Configurations>Debug;Release;Release_NoSteam</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -16,7 +17,17 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|AnyCPU'">
+    <DefineConstants>TRACE;XNADESIGNPROVIDED;WINDOWS;DIRECTX;WINDOWS_MEDIA_SESSION;NET45</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DefineConstants>TRACE;XNADESIGNPROVIDED;WINDOWS;DIRECTX;WINDOWS_MEDIA_SESSION;NET45</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|x64'">
     <DefineConstants>TRACE;XNADESIGNPROVIDED;WINDOWS;DIRECTX;WINDOWS_MEDIA_SESSION;NET45</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

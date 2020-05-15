@@ -7,6 +7,7 @@
     <Product>Hyper.ComponentModel</Product>
     <Copyright>Copyright (c) 2014 Pavel Nosovich</Copyright>
     <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;Release_NoSteam</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

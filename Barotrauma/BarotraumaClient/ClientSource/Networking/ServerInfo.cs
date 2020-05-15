@@ -316,6 +316,7 @@ namespace Barotrauma.Networking
                         }
                     }
                 }
+#if USE_STEAM
                 if (availableWorkshopUrls.Count > 0)
                 {
                     var workshopBtn = new GUIButton(new RectTransform(new Vector2(1.0f, 0.1f), content.RectTransform), TextManager.Get("ServerListSubscribeMissingPackages"))
@@ -331,6 +332,7 @@ namespace Barotrauma.Networking
                     };
                     workshopBtn.TextBlock.AutoScaleHorizontal = true;
                 }
+#endif
             }
 
             // -----------------------------------------------------------------------------
@@ -404,7 +406,7 @@ namespace Barotrauma.Networking
         public void QueryLiveInfo(Action<Networking.ServerInfo> onServerRulesReceived)
         {
             if (!SteamManager.IsInitialized) { return; }
-
+#if USE_STEAM
             if (int.TryParse(QueryPort, out int parsedPort) && IPAddress.TryParse(IP, out IPAddress parsedIP))
             {
                 if (MatchmakingPingResponse?.QueryActive ?? false)
@@ -472,8 +474,10 @@ namespace Barotrauma.Networking
                         });
                 }
             }
+#endif
         }
 
+#if USE_STEAM
         private void UpdateInfoFromSteamworksLobby(Steamworks.Data.Lobby lobby)
         {
             if (lobby.Id != LobbyID) { return; }
@@ -501,6 +505,7 @@ namespace Barotrauma.Networking
 
             SteamManager.AssignLobbyDataToServerInfo(lobby, this);
         }
+#endif
 
         public XElement ToXElement()
         {

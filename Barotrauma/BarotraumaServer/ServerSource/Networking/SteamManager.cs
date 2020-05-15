@@ -1,10 +1,11 @@
 ﻿using System.Linq;
 
+#if USE_STEAM
 namespace Barotrauma.Steam
 {
     partial class SteamManager
     {
-        #region Server
+#region Server
 
         private static void InitializeProjectSpecific() { isInitialized = true; }
 
@@ -107,6 +108,18 @@ namespace Barotrauma.Steam
             return true;
         }
 
-        #endregion
+#endregion
     }
 }
+#else
+namespace Barotrauma.Steam
+{
+    static partial class SteamManager
+    {
+        public static bool RefreshServerDetails(Networking.GameServer server) { return false; }
+        public static bool CloseServer() { return false; }
+    }
+}
+
+   
+#endif

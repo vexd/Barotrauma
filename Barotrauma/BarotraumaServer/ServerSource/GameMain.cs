@@ -87,8 +87,10 @@ namespace Barotrauma
             Console.WriteLine("Loading MD5 hash cache");
             Md5Hash.LoadCache();
 
+#if USE_STEAM
             Console.WriteLine("Initializing SteamManager");
             SteamManager.Initialize();
+#endif
             Console.WriteLine("Initializing GameAnalytics");
             if (GameSettings.SendUserStatistics) GameAnalyticsManager.Init();
 

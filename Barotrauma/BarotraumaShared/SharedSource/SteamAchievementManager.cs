@@ -216,6 +216,7 @@ namespace Barotrauma
             if (GameMain.Client != null || GameMain.GameSession == null) return;
 #endif
 
+#if USE_STEAM
             if (character != Character.Controlled &&
                 causeOfDeath.Killer != null &&
                 causeOfDeath.Killer == Character.Controlled)
@@ -224,6 +225,7 @@ namespace Barotrauma
                     character.IsHuman ? "humanskilled" : "monsterskilled",
                     1);
             }
+#endif
 
             roundData?.Casualties.Add(character);
 
@@ -304,14 +306,18 @@ namespace Barotrauma
                         !myCharacter.IsDead &&
                         (myCharacter.Submarine == gameSession.Submarine || (Level.Loaded?.EndOutpost != null && myCharacter.Submarine == Level.Loaded.EndOutpost)))
                     {
+#if USE_STEAM
                         SteamManager.IncrementStat("kmstraveled", levelLengthKilometers);
+#endif
                     }
 #endif
                 }
                 else
                 {
+#if USE_STEAM
                     //in sp making it to the end is enough
                     SteamManager.IncrementStat("kmstraveled", levelLengthKilometers);
+#endif
                 }
             }
 
@@ -431,8 +437,9 @@ namespace Barotrauma
 #if CLIENT
             if (conditions != null && !conditions(Character.Controlled)) return;
 #endif
-
+#if USE_STEAM
             SteamManager.UnlockAchievement(identifier);
+#endif
         }
     }
 }
