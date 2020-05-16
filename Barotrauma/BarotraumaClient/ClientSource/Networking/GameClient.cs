@@ -1273,6 +1273,8 @@ namespace Barotrauma.Networking
 
             bool includesFinalize = inc.ReadBoolean(); inc.ReadPadBits();
 
+            DebugConsole.Log("Recieved Start game on a: " + subName + " - seed: " + levelSeed);
+
             GameModePreset gameMode = GameModePreset.List.Find(gm => gm.Identifier == modeIdentifier);
             MultiPlayerCampaign campaign = 
                 GameMain.NetLobbyScreen.SelectedMode == GameMain.GameSession?.GameMode.Preset && gameMode == GameMain.NetLobbyScreen.SelectedMode ?

@@ -101,7 +101,7 @@ namespace Barotrauma
         public static bool CheatsEnabled;
 
         private static readonly List<ColoredText> unsavedMessages = new List<ColoredText>();
-        private static readonly int messagesPerFile = 5000;
+        private static readonly int messagesPerFile = 25000;
         public const string SavePath = "ConsoleLogs";
 
         private static void AssignOnExecute(string names, Action<string[]> onExecute)
@@ -1680,6 +1680,7 @@ namespace Barotrauma
                 }
                 catch (Exception e)
                 {
+                    unsavedMessages.Clear();
                     ThrowError("Failed to create a folder for debug console logs", e);
                     return;
                 }
@@ -1713,6 +1714,7 @@ namespace Barotrauma
             try
             {
                 File.WriteAllLines(filePath + ".txt", unsavedMessages.Select(l => "[" + l.Time + "] " + l.Text));
+                unsavedMessages.Clear();
             }
             catch (Exception e)
             {

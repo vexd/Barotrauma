@@ -1901,10 +1901,7 @@ namespace Barotrauma.Networking
                 yield return CoroutineStatus.Failure;
             }
 
-            MissionMode missionMode = GameMain.GameSession.GameMode as MissionMode;
-            bool missionAllowRespawn = campaign == null && (missionMode?.Mission == null || missionMode.Mission.AllowRespawn);
-
-            if (serverSettings.AllowRespawn && (missionAllowRespawn || serverSettings.AllowCampaignRespawn)) { respawnManager = new RespawnManager(this, usingShuttle ? selectedShuttle : null); }
+            if (MissionAllowsRespawn()) { respawnManager = new RespawnManager(this, usingShuttle ? selectedShuttle : null); }
 
             Level.Loaded?.SpawnCorpses();
             AutoItemPlacer.PlaceIfNeeded(GameMain.GameSession.GameMode);
@@ -2051,6 +2048,13 @@ namespace Barotrauma.Networking
             }
         }
 
+        private bool MissionAllowsRespawn()
+        {
+            MultiPlayerCampaign campaign = GameMain.GameSession?.GameMode as MultiPlayerCampaign;
+            MissionMode missionMode = GameMain.GameSession.GameMode as MissionMode;
+            return serverSettings.AllowRespawn && (campaign == null || (campaign != null && serverSettings.AllowCampaignRespawn)) && (missionMode?.Mission == null || missionMode.Mission.AllowRespawn);
+        }
+
         private void SendStartMessage(int seed, string levelSeed, GameSession gameSession, Client client, bool includesFinalize)
         {
             IWriteMessage msg = new WriteOnlyMessage();
@@ -2073,12 +2077,7 @@ namespace Barotrauma.Networking
             msg.Write(gameSession.GameMode.Preset.Identifier);
             msg.Write((short)(GameMain.GameSession.GameMode?.Mission == null ?
                 -1 : MissionPrefab.List.IndexOf(GameMain.GameSession.GameMode.Mission.Prefab)));
-
-            MultiPlayerCampaign campaign = GameMain.GameSession?.GameMode as MultiPlayerCampaign;
-
-            MissionMode missionMode = GameMain.GameSession.GameMode as MissionMode;
-            bool missionAllowRespawn = campaign == null && (missionMode?.Mission == null || missionMode.Mission.AllowRespawn);
-            msg.Write(serverSettings.AllowRespawn && missionAllowRespawn);
+            msg.Write(MissionAllowsRespawn());
 
             msg.Write(serverSettings.AllowDisguises);
             msg.Write(serverSettings.AllowRewiring);

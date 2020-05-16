@@ -55,6 +55,8 @@ namespace Barotrauma
 
         public void PlaceObjects(Level level, int amount)
         {
+            DebugConsole.Log("VXD - Start Placing Objects");
+
             objectGrid = new List<LevelObject>[
                 level.Size.X / GridSize,
                 (level.Size.Y - level.BottomPos) / GridSize];
@@ -147,7 +149,7 @@ namespace Barotrauma
                 }
 
             }
-                
+            DebugConsole.Log("VXD - End Placing Objects");
         }
 
         private void AddObject(LevelObject newObject, Level level)

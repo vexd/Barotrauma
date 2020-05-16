@@ -132,7 +132,6 @@ namespace Barotrauma
                         if (unsavedMessages.Count >= messagesPerFile)
                         {
                             SaveLogs();
-                            unsavedMessages.Clear();
                         }
                     }
                 }

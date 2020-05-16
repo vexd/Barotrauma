@@ -160,12 +160,12 @@ namespace Barotrauma
         public void StartRound(string levelSeed, float? difficulty = null)
         {
             Level randomLevel = Level.CreateRandom(levelSeed, difficulty);
-
             StartRound(randomLevel);
         }
 
         public void StartRound(Level level, bool mirrorLevel = false)
         {
+            DebugConsole.Log("VXD - Starting new round");
             //make sure no status effects have been carried on from the next round
             //(they should be stopped in EndRound, this is a safeguard against cases where the round is ended ungracefully)
             StatusEffect.StopAll();
@@ -188,6 +188,8 @@ namespace Barotrauma
                 return;
             }
 
+            DebugConsole.Log("VXD - Start Creating sub");
+
             Submarine.Unload();
             Submarine = Submarine.MainSub = new Submarine(SubmarineInfo);
             Submarine.MainSub = Submarine;
@@ -195,6 +197,8 @@ namespace Barotrauma
             {
                 Submarine.MainSubs[1] = new Submarine(SubmarineInfo, true);
             }
+
+            DebugConsole.Log("VXD - End Creating sub");
 
             if (level != null)
             {
@@ -286,10 +290,12 @@ namespace Barotrauma
 
                 if (GameMain.NetworkMember == null) 
                 {
+                    DebugConsole.Log("VXD - Start single player corpse and item placement");
                     //only place items and corpses here in single player
                     //the server does this after loading the respawn shuttle
                     Level?.SpawnCorpses();
                     AutoItemPlacer.PlaceIfNeeded(GameMode);
+                    DebugConsole.Log("VXD - End single player corpse and item placement");
                 }
                 if (GameMode is MultiPlayerCampaign mpCampaign && GameMain.NetworkMember != null && GameMain.NetworkMember.IsServer)
                 {
@@ -319,6 +325,8 @@ namespace Barotrauma
 
             RoundStartTime = Timing.TotalTime;
             GameMain.ResetFrameTime();
+
+            DebugConsole.Log("VXD - Round Started!!!");
         }
 
         public void Update(float deltaTime)

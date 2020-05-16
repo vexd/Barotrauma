@@ -69,6 +69,8 @@ namespace Barotrauma
         {
             if (isClient) { return; }
 
+            DebugConsole.Log("VXD - EventManager Start Round");
+
             pendingEventSets.Clear();
             selectedEvents.Clear();
 

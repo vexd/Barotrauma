@@ -270,6 +270,7 @@ namespace Barotrauma
             {
                 seed = Rand.Range(0, int.MaxValue, Rand.RandSync.Server).ToString();
             }
+            DebugConsole.Log("VXD - Creating new level from seed: " + seed);
 
             Rand.SetSyncedSeed(ToolBox.StringToInt(seed));
 
@@ -286,6 +287,8 @@ namespace Barotrauma
 
         public void Generate(bool mirror)
         {
+            DebugConsole.Log("VXD - Start Generating Level");
+
             if (loaded != null) { loaded.Remove(); }        
             loaded = this;
 
@@ -771,6 +774,8 @@ namespace Barotrauma
 
             //assign an ID to make entity events work
             ID = FindFreeID();
+
+            DebugConsole.Log("VXD - EntityCountAfterGenerate: " + EntityCountAfterGenerate + " First found ID: " + ID);
         }
 
 
@@ -1553,6 +1558,8 @@ namespace Barotrauma
         private readonly Dictionary<Submarine, List<Rectangle>> blockedRects = new Dictionary<Submarine, List<Rectangle>>();
         private void CreateWrecks()
         {
+            DebugConsole.Log("VXD - Start Creating Wrecks");
+
             var totalSW = new Stopwatch();
             var tempSW = new Stopwatch();
             totalSW.Start();
@@ -1845,10 +1852,13 @@ namespace Barotrauma
             }
             totalSW.Stop();
             Debug.WriteLine($"{wrecks.Count} wrecks created in { totalSW.ElapsedMilliseconds.ToString()} (ms)");
+            DebugConsole.Log("VXD - End Creating Wrecks");
         }
 
         private void CreateOutposts()
         {
+            DebugConsole.Log("VXD - Start Creating outposts");
+
             var outpostFiles = ContentPackage.GetFilesOfType(GameMain.Config.SelectedContentPackages, ContentType.Outpost);
             if (outpostFiles.Count() == 0)
             {
@@ -1956,6 +1966,8 @@ namespace Barotrauma
                     if (GameMain.GameSession?.EndLocation != null) { outpost.Info.Name = GameMain.GameSession.EndLocation.Name; }
                 }
             }
+
+            DebugConsole.Log("VXD - End Creating outposts");
         }
 
         private bool IsModeStartOutpostCompatible()
@@ -1970,6 +1982,8 @@ namespace Barotrauma
         public void SpawnCorpses()
         {
             if (GameMain.NetworkMember != null && GameMain.NetworkMember.IsClient) { return; }
+
+            DebugConsole.Log("VXD - Start Creating corpses");
 
             foreach (Submarine wreck in wrecks)
             {
@@ -2052,6 +2066,8 @@ namespace Barotrauma
                     return hull != null;
                 }
             }
+
+            DebugConsole.Log("VXD - End Creating corpses");
         }
 
         public override void Remove()

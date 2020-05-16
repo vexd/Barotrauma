@@ -86,8 +86,10 @@ namespace Barotrauma
 
         public void CreateItems()
         {
+            DebugConsole.Log("VXD - Start CargoManager CreateItems");
             CreateItems(purchasedItems);
             OnItemsChanged?.Invoke();
+            DebugConsole.Log("VXD - End CargoManager CreateItems");
         }
 
         public static void CreateItems(List<PurchasedItem> itemsToSpawn)
