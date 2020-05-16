@@ -2,11 +2,18 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace Barotrauma.Items.Components
 {
+    class UIChannelGroup
+    {
+        public ChannelGroup ChannelGroup;
+        public GUITextBlock RecievingTextBlock;
+        public GUITickBox ActiveCheckBox;
+    }
     partial class WifiComponent : IDrawableComponent
     {
         public override bool ShouldDrawHUD(Character character)
@@ -43,7 +50,7 @@ namespace Barotrauma.Items.Components
         private void RecreateGUI()
         {
             GuiFrame.ClearChildren();
-            activeButtons.Clear();
+            channelGroupElements.Clear();
             ChannelGroupConfigScreen.ClearChildren();
             CreateGUI();
         }
@@ -73,6 +80,17 @@ namespace Barotrauma.Items.Components
             if (isShowingConfigScreen)
             {
                 GuiFrame?.AddToGUIUpdateList();
+
+                //Update recieving channels
+                foreach (var uiGroup in channelGroupElements)
+                {
+                    if (uiGroup == null || uiGroup.ChannelGroup == null)
+                        continue;
+
+                    int numRecv = GetNumReceivingDevices(uiGroup.ChannelGroup);
+                    if(uiGroup.RecievingTextBlock!=null)
+                        uiGroup.RecievingTextBlock.Text = numRecv.ToString();
+                }
             }
             else
             {
@@ -90,7 +108,7 @@ namespace Barotrauma.Items.Components
         }
 
         private GUILayoutGroup uiElementContainer;
-        private List<GUITickBox> activeButtons = new List<GUITickBox>();
+        private List<UIChannelGroup> channelGroupElements = new List<UIChannelGroup>();
         private GUIFrame ChannelGroupConfigScreen = null;
         private bool isShowingConfigScreen = false;
         private bool isShowingSubConfigScreen = false;
@@ -181,7 +199,10 @@ namespace Barotrauma.Items.Components
                         ChildAnchor = Anchor.CenterLeft,
                     };
 
-                    var textblock = new GUITextBlock(new RectTransform(new Vector2(0.3f, 1.0f), channelGroupLayout.RectTransform), channelSetting.ChannelId.ToString());
+                    bool isCommonChannel = System.Enum.IsDefined(typeof(CommChannelIds), channelSetting.ChannelId);
+                    string channelName = isCommonChannel ? ((CommChannelIds)channelSetting.ChannelId).ToString() : channelSetting.ChannelId.ToString();
+
+                    var textblock = new GUITextBlock(new RectTransform(new Vector2(0.3f, 1.0f), channelGroupLayout.RectTransform), channelName);
 
                     var send = new GUITickBox(new RectTransform(new Vector2(0.1f, 0.5f), channelGroupLayout.RectTransform), "")
                     {
@@ -254,6 +275,30 @@ namespace Barotrauma.Items.Components
             ShowConfigScreen(group);
         }
 
+        private int GetNumReceivingDevices(ChannelGroup group)
+        {
+            int numRcv = 0;
+
+            foreach (Client client in GameMain.NetworkMember.ConnectedClients)
+            {
+                if(client?.Character?.Inventory!=null)
+                {
+                    foreach (var item in client.Character.Inventory.Items)
+                    {
+                        var wifiComp = item?.GetComponent<WifiComponent>();
+                        if (wifiComp != null && client.Character.HasEquippedItem(item) && wifiComp.MultiChannel)
+                        {
+                            if (wifiComp.ActiveChannelGroup!=null && wifiComp.ActiveChannelGroup.CanRecieve(group))
+                                numRcv++;
+                        }
+                    }
+                }
+            }
+
+            return numRcv;
+        }
+
+
         private void CreateGUI()
         {
             if (GuiFrame == null)
@@ -293,7 +338,8 @@ namespace Barotrauma.Items.Components
                     ChildAnchor = Anchor.CenterLeft,
                 };
                 var activeText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "Active");
-                var channelText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "Name");
+                var channelText = new GUITextBlock(new RectTransform(new Vector2(0.22f, 1.0f), headingsLayout.RectTransform), "Name");
+                var recvText = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), headingsLayout.RectTransform), "# Recv.");
             }
 
             {
@@ -330,22 +376,30 @@ namespace Barotrauma.Items.Components
                     if (activeChannelGroup == channelGroup)
                         active.Selected = true;
                     active.OnSelected = UIChannelGroupActivated;
-                    activeButtons.Add(active);
+
+                    int receivingDevicesForGroup = GetNumReceivingDevices(channelGroup);
 
                     var textblock = new GUITextBlock(new RectTransform(new Vector2(0.3f, 1.0f), channelGroupLayout.RectTransform), channelGroup.Name);
-                    var removeButton = new GUIButton(new RectTransform(new Vector2(0.2f, 1.0f), channelGroupLayout.RectTransform),
+                    var recvDev = new GUITextBlock(new RectTransform(new Vector2(0.1f, 1.0f), channelGroupLayout.RectTransform), receivingDevicesForGroup.ToString());
+                    var removeButton = new GUIButton(new RectTransform(new Vector2(0.15f, 1.0f), channelGroupLayout.RectTransform),
                        TextManager.Get("Remove"), style: "GUIButtonSmall")
                     {
                         UserData = channelGroup,
                         OnClicked = UIRemoveChannelGroup
                     };
 
-                    var configButton = new GUIButton(new RectTransform(new Vector2(0.2f, 1.0f), channelGroupLayout.RectTransform),
+                    var configButton = new GUIButton(new RectTransform(new Vector2(0.15f, 1.0f), channelGroupLayout.RectTransform),
                       TextManager.Get("Config"), style: "GUIButtonSmall")
                     {
                         UserData = channelGroup,
                         OnClicked = UIShowChannelGroupConfig
                     };
+
+                    UIChannelGroup group = new UIChannelGroup();
+                    group.ChannelGroup = channelGroup;
+                    group.ActiveCheckBox = active;
+                    group.RecievingTextBlock = recvDev;
+                    channelGroupElements.Add(group);
 
                     channelGroupLayout.RectTransform.MinSize = new Point(0, active.Box.RectTransform.MinSize.Y);
                 }
@@ -415,10 +469,10 @@ namespace Barotrauma.Items.Components
                 ChannelGroup cg = box.UserData as ChannelGroup;
                 ActiveChannelGroup = cg;
 
-                foreach (var tickbox in activeButtons)
+                foreach (var groupElement in channelGroupElements)
                 {
-                    if (tickbox != box)
-                        tickbox.Selected = false;
+                    if (box != groupElement.ActiveCheckBox)
+                        groupElement.ActiveCheckBox.Selected = false;
                 }
             }
             return true;
