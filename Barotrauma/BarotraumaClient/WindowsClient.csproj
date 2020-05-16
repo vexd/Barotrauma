@@ -11,7 +11,7 @@
     <Platforms>AnyCPU;x64</Platforms>
     <AssemblyName>Barotrauma</AssemblyName>
     <ApplicationIcon>..\BarotraumaShared\Icon.ico</ApplicationIcon>
-    <Configurations>Debug;Release;Unstable;Release_NoSteam</Configurations>
+    <Configurations>Debug;Release;Unstable;Release_NoSteam;Debug_NoSteam</Configurations>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
@@ -21,10 +21,23 @@
     <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_NoSteam|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE;CLIENT;WINDOWS;USE_STEAM</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DefineConstants>TRACE;DEBUG;CLIENT;WINDOWS;X64;USE_STEAM</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_NoSteam|x64'">
+    <DefineConstants>TRACE;DEBUG;CLIENT;WINDOWS;X64</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
+    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -52,7 +65,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoSteam|x64'">
-    <DefineConstants>TRACE;CLIENT;WINDOWS;X64;USE_STEAM</DefineConstants>
+    <DefineConstants>TRACE;CLIENT;WINDOWS;X64</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\bin\$(Configuration)Windows\</OutputPath>
   </PropertyGroup>
@@ -102,7 +115,7 @@
     </Content>
   </ItemGroup>
   
-  <ItemGroup Condition="'$(Configuration)'!='Debug'">
+  <ItemGroup Condition="'$(Configuration)'=='Release' OR '$(Configuration)'=='Release_NoSteam' OR '$(Configuration)'=='Unstable'">
     <ProjectReference Include="..\..\Libraries\Concentus\CSharp\Concentus\Concentus.NetStandard.csproj" AdditionalProperties="Configuration=Release" />
     <ProjectReference Include="..\..\Libraries\Facepunch.Steamworks\Facepunch.Steamworks.Win64.csproj" AdditionalProperties="Configuration=Release" />
     <ProjectReference Include="..\..\Libraries\Farseer Physics Engine 3.5\Farseer.NetStandard.csproj" AdditionalProperties="Configuration=Release" />
@@ -112,7 +125,7 @@
     <ProjectReference Include="..\..\Libraries\MonoGame.Framework\Src\MonoGame.Framework\MonoGame.Framework.Windows.NetStandard.csproj" AdditionalProperties="Configuration=Release" />
     <ProjectReference Include="..\..\Libraries\SharpFont\Source\SharpFont\SharpFont.NetStandard.csproj" AdditionalProperties="Configuration=Release" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+  <ItemGroup Condition="'$(Configuration)'=='Debug' OR '$(Configuration)'=='Debug_NoSteam'">
     <ProjectReference Include="..\..\Libraries\Concentus\CSharp\Concentus\Concentus.NetStandard.csproj" AdditionalProperties="Configuration=Debug" />
     <ProjectReference Include="..\..\Libraries\Facepunch.Steamworks\Facepunch.Steamworks.Win64.csproj" AdditionalProperties="Configuration=Debug" />
     <ProjectReference Include="..\..\Libraries\Farseer Physics Engine 3.5\Farseer.NetStandard.csproj" AdditionalProperties="Configuration=Debug" />
@@ -159,64 +172,5 @@
     </Content>
   </ItemGroup>
 
-  <!-- Sourced from https://stackoverflow.com/a/45248069 -->
-  <Target Name="GetGitRevision" BeforeTargets="WriteGitRevision" Condition="'$(BuildHash)' == ''">
-    <PropertyGroup>
-      <!-- temp file for the git version (lives in "obj" folder)-->
-      <VerFile>$(IntermediateOutputPath)gitver</VerFile>
-      <BranchFile>$(IntermediateOutputPath)gitbranch</BranchFile>
-    </PropertyGroup>
-
-    <!-- write the hash to the temp file.-->
-    <Exec Command="git -C $(ProjectDir) rev-parse --short HEAD &gt; $(VerFile)" ContinueOnError="true">
-      <Output TaskParameter="exitcode" ItemName="exitcodes" />
-    </Exec>
-    <Exec Command="git -C $(ProjectDir) rev-parse --short HEAD --symbolic-full-name --abbrev-ref=strict &gt; $(BranchFile)" ContinueOnError="true" />
-
-    <Exec Command="echo GIT_UNAVAILABLE &gt; $(VerFile)" Condition="'%(exitcodes.identity)'&gt;0" />
-    <Exec Command="echo GIT_UNAVAILABLE &gt; $(BranchFile)" Condition="'%(exitcodes.identity)'&gt;0" />
-    
-    <!-- read the version into the GitVersion itemGroup-->
-    <ReadLinesFromFile File="$(VerFile)">
-      <Output TaskParameter="Lines" ItemName="GitVersion" />
-    </ReadLinesFromFile>
-    <!-- Set the BuildHash property to contain the GitVersion, if it wasn't already set.-->
-    <PropertyGroup>
-      <BuildHash>@(GitVersion)</BuildHash>
-    </PropertyGroup>
-
-    <!-- read the branch into the GitBranch itemGroup-->
-    <ReadLinesFromFile File="$(BranchFile)">
-      <Output TaskParameter="Lines" ItemName="GitBranch" />
-    </ReadLinesFromFile>
-    <!-- Set the BuildHash property to contain the GitVersion, if it wasn't already set.-->
-    <PropertyGroup>
-      <BuildBranch>@(GitBranch)</BuildBranch>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="WriteGitRevision" BeforeTargets="CoreCompile">
-    <!-- names the obj/.../CustomAssemblyInfo.cs file -->
-    <PropertyGroup>
-      <CustomAssemblyInfoFile>$(IntermediateOutputPath)CustomAssemblyInfo.cs</CustomAssemblyInfoFile>
-    </PropertyGroup>
-    <!-- includes the CustomAssemblyInfo for compilation into your project -->
-    <ItemGroup>
-      <Compile Include="$(CustomAssemblyInfoFile)" />
-    </ItemGroup>
-    <!-- defines the AssemblyMetadata attribute that will be written -->
-    <ItemGroup>
-      <AssemblyAttributes Include="AssemblyMetadata">
-        <_Parameter1>GitRevision</_Parameter1>
-        <_Parameter2>$(BuildHash)</_Parameter2>
-      </AssemblyAttributes>
-      <AssemblyAttributes Include="AssemblyMetadata">
-        <_Parameter1>GitBranch</_Parameter1>
-        <_Parameter2>$(BuildBranch)</_Parameter2>
-      </AssemblyAttributes>
-    </ItemGroup>
-    <!-- writes the attribute to the customAssemblyInfo file -->
-    <WriteCodeFragment Language="C#" OutputFile="$(CustomAssemblyInfoFile)" AssemblyAttributes="@(AssemblyAttributes)" />
-  </Target>
 
 </Project>
