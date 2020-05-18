@@ -278,21 +278,27 @@ namespace Barotrauma.Items.Components
         private int GetNumReceivingDevices(ChannelGroup group)
         {
             int numRcv = 0;
+            if (GameMain.NetworkMember == null)
+                return 0;
 
             foreach (Client client in GameMain.NetworkMember.ConnectedClients)
             {
-                if(client?.Character?.Inventory!=null)
+                if (client == null || client.Character == null || client.Character.Inventory == null)
+                    continue;
+
+                foreach (var item in client.Character.Inventory.Items)
                 {
-                    foreach (var item in client.Character.Inventory.Items)
+                    if (item == null)
+                        continue;
+
+                    var wifiComp = item.GetComponent<WifiComponent>();
+                    if (wifiComp != null && client.Character.HasEquippedItem(item) && wifiComp.MultiChannel)
                     {
-                        var wifiComp = item?.GetComponent<WifiComponent>();
-                        if (wifiComp != null && client.Character.HasEquippedItem(item) && wifiComp.MultiChannel)
-                        {
-                            if (wifiComp.ActiveChannelGroup!=null && wifiComp.ActiveChannelGroup.CanRecieve(group))
-                                numRcv++;
-                        }
+                        if (wifiComp.ActiveChannelGroup!=null && wifiComp.ActiveChannelGroup.CanRecieve(group))
+                            numRcv++;
                     }
                 }
+
             }
 
             return numRcv;
