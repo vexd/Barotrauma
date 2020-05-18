@@ -116,6 +116,8 @@ namespace Barotrauma
             private set;
         }
 
+        public List<Submarine> Wrecks { get { return wrecks; } }
+
         public LevelWall SeaFloor
         {
             get { return seaFloor; }

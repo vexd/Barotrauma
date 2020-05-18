@@ -94,6 +94,9 @@ namespace Barotrauma.Items.Components
 
         public float DisplayRadius { get; private set; }
 
+        private bool DisplayAllRuins = true;
+        private bool DisplayAllWrecks = true;
+
         partial void InitProjSpecific(XElement element)
         {
             System.Diagnostics.Debug.Assert(Enum.GetValues(typeof(BlipType)).Cast<BlipType>().All(t => blipColorGradient.ContainsKey(t)));
@@ -692,7 +695,7 @@ namespace Barotrauma.Items.Components
 
             foreach (Submarine sub in Submarine.Loaded)
             {
-                if (!sub.ShowSonarMarker) { continue; }
+                if (sub==null || !sub.ShowSonarMarker) { continue; }
                 if (UseTransducers ?
                     connectedTransducers.Any(t => sub == t.Transducer.Item.Submarine || sub.DockedTo.Contains(t.Transducer.Item.Submarine)) :
                     (sub == item.Submarine || sub.DockedTo.Contains(item.Submarine)))
@@ -706,6 +709,53 @@ namespace Barotrauma.Items.Components
                     sub.Info.HasTag(SubmarineTag.Shuttle) ? "shuttle" : "submarine",
                     sub.WorldPosition - transducerCenter, 
                     displayScale, center, DisplayRadius * 0.95f);
+            }
+
+
+            uint nameIdx = 0;
+            if (DisplayAllRuins)
+            {
+                
+                foreach (RuinGeneration.Ruin ruin in Level.Loaded.Ruins)
+                {
+                    if (ruin == null)
+                        continue;
+
+                    Vector2 ruinsPos = ruin.Area.Center.ToVector2();
+                    string ruinName = ArmyAlphabet.GetArmyAlphabetEntry(nameIdx);
+                    ruinName = ruinName != null ? ruinName : nameIdx.ToString();
+                    string ruinLabel = "Ruin " + ruinName;
+
+                    DrawMarker(spriteBatch,
+                          ruinLabel,
+                          "", //TODO custom icon
+                          ruinsPos - transducerCenter,
+                          displayScale, center, DisplayRadius * 0.95f);
+
+                    nameIdx++;
+                }
+            }
+
+            if (DisplayAllWrecks)
+            {
+                foreach (Submarine sub in Level.Loaded.Wrecks)
+                {
+                    if (sub == null)
+                        continue;
+
+                    Vector2 pos = sub.WorldPosition;
+                    string name = ArmyAlphabet.GetArmyAlphabetEntry(nameIdx);
+                    name = name != null ? name : nameIdx.ToString();
+                    string label = sub.Info.DisplayName + " " + name;
+
+                    DrawMarker(spriteBatch,
+                      label,
+                      sub.Info.HasTag(SubmarineTag.Shuttle) ? "shuttle" : "submarine",
+                      sub.WorldPosition - transducerCenter,
+                      displayScale, center, DisplayRadius * 0.95f);
+
+                    nameIdx++;
+                }
             }
 
             if (GameMain.DebugDraw)
