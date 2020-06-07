@@ -759,7 +759,8 @@ namespace Barotrauma.Items.Components
                     DrawMarker(spriteBatch,
                           ruinLabel,
                           "", //TODO custom icon
-                          ruinsPos - transducerCenter,
+                          ruin,
+                          ruinsPos, transducerCenter,
                           displayScale, center, DisplayRadius * 0.95f);
 
                     nameIdx++;
@@ -781,7 +782,8 @@ namespace Barotrauma.Items.Components
                     DrawMarker(spriteBatch,
                       label,
                       sub.Info.HasTag(SubmarineTag.Shuttle) ? "shuttle" : "submarine",
-                      sub.WorldPosition - transducerCenter,
+                      sub,
+                      sub.WorldPosition, transducerCenter,
                       displayScale, center, DisplayRadius * 0.95f);
 
                     nameIdx++;
