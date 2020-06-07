@@ -721,7 +721,7 @@ namespace Barotrauma
                 if ((PlayerInput.KeyDown(InputType.Voice) || PlayerInput.KeyDown(InputType.LocalVoice)) &&
                          GUI.KeyboardDispatcher.Subscriber == null)
                 {
-                    bool isLocalChat = VoipCapture.Instance.ForceLocal;
+                    bool isLocalChat = VoipCapture.Instance !=null && VoipCapture.Instance.ForceLocal;
                     string BroadcastGroupName = "Local";
                     ShowSpeechBubble(1.25f, isLocalChat ? Color.White : Color.Red);
 
