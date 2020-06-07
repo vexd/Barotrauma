@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using Barotrauma.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -107,6 +107,8 @@ namespace Barotrauma
             MapGenerationParams.Init();
             LevelGenerationParams.LoadPresets();
             ScriptedEventSet.LoadPrefabs();
+            Order.Init();
+            EventManagerSettings.Init();
 
             AfflictionPrefab.LoadAll(GetFilesOfType(ContentType.Afflictions));
             SkillSettings.Load(GetFilesOfType(ContentType.SkillSettings));
@@ -182,7 +184,7 @@ namespace Barotrauma
             bool enableUpnp = false;
 
             int maxPlayers = 10;
-            int ownerKey = 0;
+            int? ownerKey = null;
             UInt64 steamId = 0;
 
             XDocument doc = XMLExtensions.TryLoadXml(ServerSettings.SettingsFile);
@@ -199,7 +201,7 @@ namespace Barotrauma
                 password = doc.Root.GetAttributeString("password", "");
                 enableUpnp = doc.Root.GetAttributeBool("enableupnp", false);
                 maxPlayers = doc.Root.GetAttributeInt("maxplayers", 10);
-                ownerKey = 0;
+                ownerKey = null;
             }
             
 #if DEBUG
@@ -246,7 +248,10 @@ namespace Barotrauma
                         i++;
                         break;
                     case "-ownerkey":
-                        int.TryParse(CommandLineArgs[i + 1], out ownerKey);
+                        if (int.TryParse(CommandLineArgs[i + 1], out int key))
+                        {
+                            ownerKey = key;
+                        }
                         i++;
                         break;
                     case "-steamid":
